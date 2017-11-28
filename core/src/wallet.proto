@@ -133,8 +133,8 @@ message Key {
   // Encrypted version of the seed
   optional EncryptedData encrypted_deterministic_seed = 9;
 
-  // The path to the root.
-  repeated uint32 accountPath = 10 [packed=true];
+  // The path to the root. Only applicable to a DETERMINISTIC_MNEMONIC key entry.
+  repeated uint32 account_path = 10 [packed = true];
 }
 
 message Script {

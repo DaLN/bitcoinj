@@ -114,13 +114,11 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
     // a payment request that can generate lots of addresses independently.
     // The account path may be overridden by subclasses.
     public static final ImmutableList<ChildNumber> ACCOUNT_ZERO_PATH = ImmutableList.of(ChildNumber.ZERO_HARDENED);
+    // m / 44' / 0' / 0'
+    public static final ImmutableList<ChildNumber> BIP44_ACCOUNT_ZERO_PATH = ImmutableList.of(new ChildNumber(44, true),
+            ChildNumber.ZERO_HARDENED, ChildNumber.ZERO_HARDENED);
     public static final ImmutableList<ChildNumber> EXTERNAL_SUBPATH = ImmutableList.of(ChildNumber.ZERO);
     public static final ImmutableList<ChildNumber> INTERNAL_SUBPATH = ImmutableList.of(ChildNumber.ONE);
-    public static final ImmutableList<ChildNumber> EXTERNAL_PATH = HDUtils.concat(ACCOUNT_ZERO_PATH, EXTERNAL_SUBPATH);
-    public static final ImmutableList<ChildNumber> INTERNAL_PATH = HDUtils.concat(ACCOUNT_ZERO_PATH, INTERNAL_SUBPATH);
-    // m / 44' / 0' / 0'
-    public static final ImmutableList<ChildNumber> BIP44_ACCOUNT_ZERO_PATH =
-            ImmutableList.of(new ChildNumber(44, true), ChildNumber.ZERO_HARDENED, ChildNumber.ZERO_HARDENED);
 
     // We try to ensure we have at least this many keys ready and waiting to be handed out via getKey().
     // See docs for getLookaheadSize() for more info on what this is for. The -1 value means it hasn't been calculated
@@ -349,15 +347,16 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
      * <p>Watch key has to be an account key.</p>
      */
     protected DeterministicKeyChain(DeterministicKey watchKey, boolean isFollowing) {
-        this(watchKey, isFollowing,  ACCOUNT_ZERO_PATH);
+        this(watchKey, isFollowing, ACCOUNT_ZERO_PATH);
     }
-    
+
     /**
      * <p>Creates a deterministic key chain with the given watch key. If <code>isFollowing</code> flag is set then this keychain follows
      * some other keychain. In a married wallet following keychain represents "spouse's" keychain.</p>
      * <p>Watch key has to be an account key.</p>
      */
-    protected DeterministicKeyChain(DeterministicKey watchKey, boolean isFollowing, ImmutableList<ChildNumber> accountPath) {
+    protected DeterministicKeyChain(DeterministicKey watchKey, boolean isFollowing,
+            ImmutableList<ChildNumber> accountPath) {
         this(watchKey, accountPath);
         this.isFollowing = isFollowing;
     }
@@ -399,7 +398,6 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
     protected DeterministicKeyChain(DeterministicSeed seed, @Nullable KeyCrypter crypter,
                                     ImmutableList<ChildNumber> accountPath) {
         setAccountPath(accountPath);
-
         this.seed = seed;
         basicKeyChain = new BasicKeyChain(crypter);
         if (!seed.isEncrypted()) {
@@ -465,16 +463,12 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
 
     /** Override in subclasses to use a different account derivation path */
     protected ImmutableList<ChildNumber> getAccountPath() {
-        if (accountPath != null) {
+        if (accountPath != null)
             return accountPath;
-        }
-
         return ACCOUNT_ZERO_PATH;
     }
 
-    /*
-     * Store account path of this DeterministicKey
-     */
+    /** Store account path of this DeterministicKey */
     protected void setAccountPath(ImmutableList<ChildNumber> accountPath) {
         this.accountPath = accountPath;
     }
@@ -846,9 +840,8 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
                 for (int i : key.getAccountPathList()) {
                     accountPath.add(new ChildNumber(i));
                 }
-                if(accountPath.isEmpty()) {
+                if (accountPath.isEmpty())
                     accountPath = ACCOUNT_ZERO_PATH;
-                }
                 if (chain != null) {
                     checkState(lookaheadSize >= 0);
                     chain.setLookaheadSize(lookaheadSize);
@@ -922,8 +915,7 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
                         isWatchingAccountKey = true;
                     } else {
                         chain = factory.makeKeyChain(key, iter.peek(), seed, crypter, isMarried,
-                                ImmutableList.<ChildNumber>builder().addAll(accountPath).build());
-
+                                ImmutableList.<ChildNumber> builder().addAll(accountPath).build());
                         chain.lookaheadSize = LAZY_CALCULATE_LOOKAHEAD;
                         // If the seed is encrypted, then the chain is incomplete at this point. However, we will load
                         // it up below as we parse in the keys. We just need to check at the end that we've loaded

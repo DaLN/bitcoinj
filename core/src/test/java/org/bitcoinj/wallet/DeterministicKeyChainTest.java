@@ -53,9 +53,7 @@ public class DeterministicKeyChainTest {
         assertEquals(secs, checkNotNull(chain.getSeed()).getCreationTimeSeconds());
 
         bip44chain = new DeterministicKeyChain(new DeterministicSeed(ENTROPY, "", secs),
-                ImmutableList.of(new ChildNumber(44, true),
-                        new ChildNumber(1, true),
-                        new ChildNumber(0, true)));
+                ImmutableList.of(new ChildNumber(44, true), new ChildNumber(1, true), ChildNumber.ZERO_HARDENED));
         bip44chain.setLookaheadSize(10);
         assertEquals(secs, checkNotNull(bip44chain.getSeed()).getCreationTimeSeconds());
     }
@@ -141,8 +139,7 @@ public class DeterministicKeyChainTest {
         KeyChainFactory factory = new KeyChainFactory() {
             @Override
             public DeterministicKeyChain makeKeyChain(Protos.Key key, Protos.Key firstSubKey, DeterministicSeed seed,
-                                                      KeyCrypter crypter, boolean isMarried,
-                                                      ImmutableList<ChildNumber> accountPath) {
+                    KeyCrypter crypter, boolean isMarried, ImmutableList<ChildNumber> accountPath) {
                 return new AccountOneChain(crypter, seed);
             }
 
@@ -270,21 +267,20 @@ public class DeterministicKeyChainTest {
         DeterministicKey key2 = bip44chain.getKey(KeyChain.KeyPurpose.RECEIVE_FUNDS);
         DeterministicKey key3 = bip44chain.getKey(KeyChain.KeyPurpose.CHANGE);
         List<Protos.Key> keys = bip44chain.serializeToProtobuf();
-        // 1 mnemonic/seed, 1 master key, 1 account key, 2 internal keys, 3 derived, 20 lookahead and 5 lookahead threshold.
-        int numItems =
-                3  // mnemonic/seed
-                        + 1  // master key
-                        + 1  // account key
-                        + 2  // ext/int parent keys
-                        + (bip44chain.getLookaheadSize() + bip44chain.getLookaheadThreshold()) * 2
-                // lookahead zone on each chain
-                ;
+        // 1 mnemonic/seed, 1 master key, 1 account key, 2 internal keys, 3 derived, 20 lookahead and 5 lookahead
+        // threshold.
+        int numItems = 3 // mnemonic/seed
+                + 1 // master key
+                + 1 // account key
+                + 2 // ext/int parent keys
+                + (bip44chain.getLookaheadSize() + bip44chain.getLookaheadThreshold()) * 2 // lookahead zone on each chain
+        ;
         assertEquals(numItems, keys.size());
 
         // Get another key that will be lost during round-tripping, to ensure we can derive it again.
         DeterministicKey key4 = bip44chain.getKey(KeyChain.KeyPurpose.CHANGE);
 
-        final String EXPECTED_SERIALIZATION = checkSerialization(keys, "deterministic-walletbip44-serialization.txt");
+        final String EXPECTED_SERIALIZATION = checkSerialization(keys, "deterministic-wallet-bip44-serialization.txt");
 
         // Round trip the data back and forth to check it is preserved.
         int oldLookaheadSize = bip44chain.getLookaheadSize();
