@@ -857,7 +857,7 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
             if (entries.isEmpty() && isFollowing()) {
                 detKey.setIsFollowing(true);
             }
-            if (key.getParent() != null) {
+            if (key.getParent() != null && seed != null) {
                 // HD keys inherit the timestamp of their parent if they have one, so no need to serialize it.
                 proto.clearCreationTimestamp();
             }
@@ -992,25 +992,29 @@ public class DeterministicKeyChain implements EncryptableKeyChain {
                     path.add(index);
                 }
                 DeterministicKey detkey;
+                long creationTimeStamp = 0;
+                if (key.hasCreationTimestamp())
+                    creationTimeStamp = key.getCreationTimestamp() / 1000;
                 if (key.hasSecretBytes()) {
                     // Not encrypted: private key is available.
                     final BigInteger priv = new BigInteger(1, key.getSecretBytes().toByteArray());
-                    detkey = new DeterministicKey(immutablePath, chainCode, pubkey, priv, parent);
+                    detkey = new DeterministicKey(immutablePath, chainCode, pubkey, priv, parent,
+                            creationTimeStamp);
                 } else {
                     if (key.hasEncryptedData()) {
                         Protos.EncryptedData proto = key.getEncryptedData();
                         EncryptedData data = new EncryptedData(proto.getInitialisationVector().toByteArray(),
                                 proto.getEncryptedPrivateKey().toByteArray());
                         checkNotNull(crypter, "Encountered an encrypted key but no key crypter provided");
-                        detkey = new DeterministicKey(immutablePath, chainCode, crypter, pubkey, data, parent);
+                        detkey = new DeterministicKey(immutablePath, chainCode, crypter, pubkey, data, parent,
+                                creationTimeStamp);
                     } else {
                         // No secret key bytes and key is not encrypted: either a watching key or private key bytes
                         // will be rederived on the fly from the parent.
-                        detkey = new DeterministicKey(immutablePath, chainCode, pubkey, null, parent);
+                        detkey = new DeterministicKey(immutablePath, chainCode, pubkey, null, parent,
+                                creationTimeStamp);
                     }
                 }
-                if (key.hasCreationTimestamp())
-                    detkey.setCreationTimeSeconds(key.getCreationTimestamp() / 1000);
                 if (log.isDebugEnabled())
                     log.debug("Deserializing: DETERMINISTIC_KEY: {}", detkey);
                 if (!isWatchingAccountKey) {
