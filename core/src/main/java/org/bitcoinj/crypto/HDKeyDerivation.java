@@ -170,7 +170,7 @@ public final class HDKeyDerivation {
                     rawKey.chainCode,
                     new LazyECPoint(ECKey.CURVE.getCurve(), rawKey.keyBytes),
                     null,
-                    parent);
+                    parent, creationTimeSeconds);
         } else {
             RawKeyBytes rawKey = deriveChildKeyBytesFromPrivate(parent, childNumber);
             return new DeterministicKey(
