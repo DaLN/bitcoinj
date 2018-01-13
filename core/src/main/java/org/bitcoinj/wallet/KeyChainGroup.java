@@ -101,31 +101,11 @@ public class KeyChainGroup implements KeyBag {
     }
 
     /**
-     * Creates a keychain group with no basic chain, and an HD chain that is watching the given watching key.
-     * This HAS to be an account key as returned by {@link DeterministicKeyChain#getWatchingKey()}.
-     */
-    public KeyChainGroup(NetworkParameters params, DeterministicKey watchKey, ImmutableList<ChildNumber> accountPath) {
-        this(params, null, ImmutableList.of(DeterministicKeyChain.watch(watchKey, accountPath)), null, null);
-    }
-
-    /**
      * Creates a keychain group with no basic chain, and an HD chain that is watching or spending the given key.
      * This HAS to be an account key as returned by {@link DeterministicKeyChain#getWatchingKey()}.
      */
-    public KeyChainGroup(NetworkParameters params, DeterministicKey watchKey, boolean watch) {
-        this(params, null, ImmutableList.of(watch ? DeterministicKeyChain.watch(watchKey) : DeterministicKeyChain.spend(watchKey)), null, null);
-    }
-
-    /**
-     * Creates a keychain group with no basic chain, and an HD chain that is watching or spending the given key.
-     * This HAS to be an account key as returned by {@link DeterministicKeyChain#getWatchingKey()}.
-     */
-    public KeyChainGroup(NetworkParameters params, DeterministicKey watchKey, boolean watch,
-                         ImmutableList<ChildNumber> accountPath) {
-        this(params, null,
-                ImmutableList.of(watch ? DeterministicKeyChain.watch(watchKey, accountPath)
-                        : DeterministicKeyChain.spend(watchKey, accountPath)),
-                null, null);
+    public KeyChainGroup(NetworkParameters params, DeterministicKey accountKey, boolean watch) {
+        this(params, null, ImmutableList.of(watch ? DeterministicKeyChain.watch(accountKey) : DeterministicKeyChain.spend(accountKey)), null, null);
     }
 
     // Used for deserialization.

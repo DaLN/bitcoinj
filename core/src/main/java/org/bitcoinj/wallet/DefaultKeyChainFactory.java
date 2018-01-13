@@ -52,7 +52,7 @@ public class DefaultKeyChainFactory implements KeyChainFactory {
         if (isMarried)
             chain = new MarriedKeyChain(accountKey);
         else
-            chain = new DeterministicKeyChain(accountKey, isFollowingKey, accountKey.getPath());
+            chain = new DeterministicKeyChain(accountKey, isFollowingKey);
         return chain;
     }
 
@@ -64,18 +64,6 @@ public class DefaultKeyChainFactory implements KeyChainFactory {
             chain = new MarriedKeyChain(accountKey);
         else
             chain = DeterministicKeyChain.spend(accountKey);
-        return chain;
-    }
-
-    @Override
-    public DeterministicKeyChain makeSpendingKeyChain(Protos.Key key, Protos.Key firstSubKey, DeterministicKey accountKey,
-                                                      boolean isMarried, ImmutableList<ChildNumber> accountPath)
-            throws UnreadableWalletException {
-        DeterministicKeyChain chain;
-        if (isMarried)
-            chain = new MarriedKeyChain(accountKey);
-        else
-            chain = DeterministicKeyChain.spend(accountKey, accountPath); // this needs to be simplified
         return chain;
     }
 }
